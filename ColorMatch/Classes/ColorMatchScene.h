@@ -30,6 +30,8 @@ private:
     Vector<Ball*> balls;
     int ticks;
     Rect boundRect;
+    
+    void makePair(Ball* ballA, Ball* ballB);
 };
 
 

@@ -21,10 +21,8 @@ bool ColorMatchScene::init(){
         //this->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
         this->getPhysicsWorld()->setGravity(Point(0, -250));
         this->balls = Vector<Ball*>(10);
-        
-        
+
         this->ticks = 0;
-        //this->scheduleUpdate();
         return true;
     } else {
         return false;
@@ -58,19 +56,29 @@ void ColorMatchScene::onEnter() {
 }
 
 bool ColorMatchScene::onContactBegin(cocos2d::PhysicsContact &contact) {
+    auto ballA = (Ball*)contact.getShapeA()->getBody()->getNode();
+    auto ballB = (Ball*)contact.getShapeB()->getBody()->getNode();
+    if(ballA->getTag() == ballB->getTag()) {
+        this->makePair(ballA, ballB);
+    }
     return true;
+}
+
+void ColorMatchScene::makePair(Ball *ballA, Ball *ballB) {
+    if(ballA->getComponentRoot() != ballB->getComponentRoot()) {
+        printf("make pair: color->%d, ballA count->%d, ballB count->%dc\n", ballA->getTag(), ballA->componentCount, ballB->componentCount);
+        ballA->setComponentRoot(ballB->getComponentRoot());
+        ballA->componentCount = ballB->componentCount = ballA->componentCount + ballB->componentCount;
+    }
 }
 
 
 void ColorMatchScene::removeBall(Ball *ball) {
     // Draw the confetti particles whenever a ball is removed.
     auto particleSystem = ParticleSystemQuad::create("pop.plist");
-    //particleSystem->setSpeed(100);
-    //particleSystem->setTexture(ball->getTexture());
     particleSystem->setPosition(ball->getPosition());
     particleSystem->setAutoRemoveOnFinish(true);
     this->addChild(particleSystem, Z_PARTICLES);
-    
     
     this->balls.erase(this->balls.getIndex(ball));
     ball->removeFromParent();
@@ -78,6 +86,17 @@ void ColorMatchScene::removeBall(Ball *ball) {
 
 void ColorMatchScene::update(float delta) {
     Scene::update(delta);
+    
+    // plaster some ball
+    //Vector<Ball*> ballList = Vector<Ball*>(this->balls);
+    for (int i=0; i < this->balls.size(); i++) {
+        auto ball = balls.at(i);
+        Ball* root = ball->getComponentRoot();
+        if (root->componentCount >= 2) {
+            this->removeBall(ball);
+        }
+    }
+    
     if(ticks%6 == 0 && this->balls.size() < 100) {
         auto ball = Ball::create();
         
@@ -91,6 +110,14 @@ void ColorMatchScene::update(float delta) {
         this->balls.pushBack(ball);
         this->addChild(ball, Z_BALLS);
     }
+    
+    
+    for (int i=0; i < this->balls.size(); i++) {
+        Ball* ball = balls.at(i);
+        ball->componentCount = 1;
+        ball->setComponentRoot(ball);
+    }
+    
     ticks ++;
 }
 

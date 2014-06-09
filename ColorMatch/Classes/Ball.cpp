@@ -9,9 +9,11 @@
 #include "Ball.h"
 #include "ColorMatchScene.h"
 
+
+
 bool Ball::init() {
     string colors[] = {"red", "orange", "yellow", "green", "blue", "violet"};
-    string color = colors[rand()%colors->length()];
+    string color = colors[rand()%6];
     if (Sprite::initWithFile("Ball_" + color + "-hd.png")) {
         // Give the balls some variation in size.
         this->setScale(0.5 + 0.15*CCRANDOM_MINUS1_1());
@@ -34,14 +36,36 @@ bool Ball::init() {
         // make the sprite have the physical feature
         this->setPhysicsBody(body);
         
+        // mark this ball's color
+        this->markBallCorlor(color);
         
         // set the touch listener, when you touch the ball, the ball will expored
         auto touchListener = EventListenerTouchOneByOne::create();
         touchListener->onTouchBegan = CC_CALLBACK_2(Ball::onTouchBegan, this);
         this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
+        
+        // A the first, the ball' componentRoot is it's self
+        //this->componentParent = this;
+        //this->componentCount = 0;
         return true;
     }else {
         return false;
+    }
+}
+
+void Ball::markBallCorlor(string color) {
+    if(color == "red") {
+        this->setTag(TAG_RED);
+    }else if(color == "orange") {
+        this->setTag(TAG_ORANGE);
+    }else if(color == "yellow") {
+        this->setTag(TAG_YELLOW);
+    }else if(color == "green") {
+        this->setTag(TAG_GREEN);
+    }else if(color == "blue") {
+        this->setTag(TAG_BLUE);
+    }else if(color == "violet") {
+        this->setTag(TAG_VIOLET);
     }
 }
 
